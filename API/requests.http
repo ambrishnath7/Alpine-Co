@@ -1,0 +1,54 @@
+POST https://localhost:5004/api/login?useCookies=true
+Content-Type: application/json
+
+{
+  "email": "bob@test.com",
+  "password": "Pa$$w0rd"
+}
+
+###
+
+POST https://localhost:5004/api/account/register
+Content-Type: application/json
+
+{
+  "email": "tom@test.com",
+  "password": "Pa$$w0rd"
+}
+
+###
+
+POST https://localhost:5004/api/login?useCookies=true
+Content-Type: application/json
+
+{
+  "email": "tom@test.com",
+  "password": "Pa$$w0rd"
+}
+###
+
+GET https://localhost:5004/api/account/user-info
+Content-Type: application/json
+
+###
+
+POST https://localhost:5004/api/account/logout
+Content-Type: application/json
+
+###
+
+POST https://localhost:5004/api/account/address
+Content-Type: application/json
+
+{
+  "name": "Bob Smith",
+  "line1": "123 Test Street",
+  "city": "London",
+  "state": "London",
+  "postal_code": "SW1A 1AA",
+  "country": "GB"
+}
+
+###
+
+GET https://localhost:5004/api/account/address

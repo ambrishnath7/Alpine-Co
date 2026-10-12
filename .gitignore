@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+node_modules/
+dist/
+.env
+appsettings.Development.json
+*.db
+wwwroot/assets/
+.env*
