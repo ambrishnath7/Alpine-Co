@@ -1,4 +1,5 @@
 using Basket.API.Data;
+using Basket.API.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,8 @@ builder.Services.AddHttpClient("CatalogClient", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["CatalogUrl"] ?? "http://localhost:5001");
 });
+
+builder.Services.AddScoped<PaymentsService>();
 
 builder.Services.AddCors(options =>
 {

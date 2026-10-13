@@ -2,6 +2,7 @@ using Basket.API.Data;
 using Basket.API.DTOs;
 using Basket.API.Entities;
 using Basket.API.Extensions;
+using Basket.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +13,8 @@ namespace Basket.API.Controllers;
 public class BasketController(
     BasketContext context,
     IHttpClientFactory httpClientFactory,
-    IConfiguration config) : ControllerBase
+    IConfiguration config,
+    PaymentsService paymentsService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<BasketDto>> GetBasket()
@@ -39,7 +41,7 @@ public class BasketController(
         }
         catch
         {
-            // fallback if catalog service network error
+            // Catalog unreachable; handled below
         }
 
         if (product == null)
@@ -56,6 +58,14 @@ public class BasketController(
             product.Type,
             quantity
         );
+
+        var intent = await paymentsService.CreateOrUpdatePaymentIntent(basket);
+
+        if (intent == null)
+            return BadRequest("Problem creating payment intent");
+
+        basket.PaymentIntentId ??= intent.Id;
+        basket.ClientSecret ??= intent.ClientSecret;
 
         var result = await context.SaveChangesAsync() > 0;
 
@@ -75,46 +85,22 @@ public class BasketController(
 
         basket.RemoveItem(productId, quantity);
 
+        if (basket.Items.Count > 0)
+        {
+            var intent = await paymentsService.CreateOrUpdatePaymentIntent(basket);
+
+            if (intent == null)
+                return BadRequest("Problem updating payment intent");
+
+            basket.PaymentIntentId ??= intent.Id;
+            basket.ClientSecret ??= intent.ClientSecret;
+        }
+
         var result = await context.SaveChangesAsync() > 0;
 
         if (result) return Ok();
 
         return BadRequest("Problem removing item from the basket");
-    }
-
-    [HttpPost("coupon")]
-    public async Task<ActionResult<BasketDto>> AddCoupon([FromQuery] string code)
-    {
-        var basket = await RetrieveBasket();
-
-        if (basket == null) return BadRequest("Unable to retrieve basket");
-
-        // Simple discount coupon logic: 10% off for "DISCOUNT10", etc.
-        basket.Coupon = new AppCoupon
-        {
-            Name = code.ToUpper(),
-            PercentOff = 10,
-            PromotionCode = code.ToUpper(),
-            CouponId = Guid.NewGuid().ToString()
-        };
-
-        await context.SaveChangesAsync();
-
-        return basket.ToDto();
-    }
-
-    [HttpDelete("coupon")]
-    public async Task<ActionResult<BasketDto>> RemoveCoupon()
-    {
-        var basket = await RetrieveBasket();
-
-        if (basket == null) return BadRequest("Unable to retrieve basket");
-
-        basket.Coupon = null;
-
-        await context.SaveChangesAsync();
-
-        return basket.ToDto();
     }
 
     private async Task<Entities.Basket?> RetrieveBasket()

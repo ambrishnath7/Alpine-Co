@@ -1,5 +1,4 @@
 using Basket.API.DTOs;
-using Basket.API.Entities;
 
 namespace Basket.API.Extensions;
 
@@ -12,14 +11,6 @@ public static class BasketExtensions
             BasketId = basket.BasketId,
             ClientSecret = basket.ClientSecret,
             PaymentIntentId = basket.PaymentIntentId,
-            Coupon = basket.Coupon != null ? new AppCouponDto
-            {
-                Name = basket.Coupon.Name,
-                AmountOff = basket.Coupon.AmountOff,
-                PercentOff = basket.Coupon.PercentOff,
-                PromotionCode = basket.Coupon.PromotionCode,
-                CouponId = basket.Coupon.CouponId
-            } : null,
             Items = basket.Items.Select(x => new BasketItemDto
             {
                 ProductId = x.ProductId,
@@ -29,7 +20,14 @@ public static class BasketExtensions
                 Brand = x.Brand,
                 Type = x.Type,
                 Quantity = x.Quantity
-            }).ToList()
+            }).ToList(),
+            Coupon = basket.Coupon == null ? null : new AppCouponDto
+            {
+                Name = basket.Coupon.Name,
+                PercentOff = basket.Coupon.PercentOff,
+                PromotionCode = basket.Coupon.PromotionCode,
+                CouponId = basket.Coupon.CouponId
+            }
         };
     }
 }
