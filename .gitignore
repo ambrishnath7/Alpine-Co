@@ -9,3 +9,6 @@ appsettings.Development.json
 wwwroot/assets/
 .env*
 **/wwwroot/assets/
+**/*.db
+**/*.db-shm
+**/*.db-wal
