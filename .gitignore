@@ -8,3 +8,4 @@ appsettings.Development.json
 *.db
 wwwroot/assets/
 .env*
+**/wwwroot/assets/
